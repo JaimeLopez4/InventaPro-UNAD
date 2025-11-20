@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Productos - InventaPro</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; }
+        .producto { border: 1px solid #7e7cb3ff; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .alerta { border-left: 5px solid #e74c3c; background: #ffeaa7; }
+        .precio { color: #27ae60; font-weight: bold; }
+        .stock-bajo { color: #e74c3c; font-weight: bold; }
+        .btn { 
+            background: #3498db; 
+            color: white; 
+            padding: 10px 20px; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .btn-editar {
+            background: #3b62d7ff;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .btn-eliminar {
+            background: #e74c3c;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .btn-agregar {
+            background: #27ae60;
+        }
+        .btn-buscar {
+            background: #27ae60;
+            padding: 10px 20px;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .btn-limpiar {
+            background: #bebab5ff;
+            padding: 10px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .stats {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .botones-accion {
+            margin-top: 15px;
+        }
+        .filtros {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        .filtros-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+        .filtro-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group input {
+            width: auto;
+        }
+        .resultados-info {
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        .botones-filtros {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        /* Mantener los estilos del modal existentes */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 8px; width: 400px; text-align: center; }
+        .btn-confirmar { background: #e74c3c; margin-right: 10px; }
+        .btn-cancelar { background: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📦 Lista de Productos</h1>
+        <a href="/" class="btn">🏠 Inicio</a>
+        <a href="{% url 'agregar_producto' %}" class="btn btn-agregar">➕ Agregar Producto</a>
+    </div>
+
+    <div class="stats">
+        <h3>Resumen del inventario</h3>
+        <p>Total de productos: <strong>{{ total_productos }}</strong></p>
+        <p>Productos con stock bajo: <strong class="stock-bajo">{{ total_alerta }}</strong></p>
+    </div>
+
+    <!-- Sección de Filtros y Búsqueda -->
+    <div class="filtros">
+        <h3>🔍 Buscar y filtrar productos</h3>
+        <form method="get" action="{% url 'lista_productos' %}">
+            <div class="filtros-row">
+                <div class="filtro-item">
+                    <label for="q">Buscar por nombre:</label>
+                    <input type="text" id="q" name="q" value="{{ query_actual }}" placeholder="Ej: Manzana...">
+                </div>
+                
+                <div class="filtro-item">
+                    <label for="categoria">Filtrar por categoría:</label>
+                    <select id="categoria" name="categoria">
+                        <option value="">Todas las categorías</option>
+                        <option value="Frutas" {% if categoria_actual == "Frutas" %}selected{% endif %}>Frutas</option>
+                        <option value="Verduras" {% if categoria_actual == "Verduras" %}selected{% endif %}>Verduras</option>
+                        <option value="Lácteos" {% if categoria_actual == "Lácteos" %}selected{% endif %}>Lácteos</option>
+                        <option value="Carnes" {% if categoria_actual == "Carnes" %}selected{% endif %}>Carnes</option>
+                        <option value="Granos" {% if categoria_actual == "Granos" %}selected{% endif %}>Granos</option>
+                        <option value="Bebidas" {% if categoria_actual == "Bebidas" %}selected{% endif %}>Bebidas</option>
+                        <option value="Snacks" {% if categoria_actual == "Snacks" %}selected{% endif %}>Snacks</option>
+                        <option value="Limpieza" {% if categoria_actual == "Limpieza" %}selected{% endif %}>Limpieza</option>
+                        <option value="Higiene" {% if categoria_actual == "Higiene" %}selected{% endif %}>Higiene</option>
+                        <option value="Electrónicos" {% if categoria_actual == "Electrónicos" %}selected{% endif %}>Electrónicos</option>
+                        <option value="Ropa" {% if categoria_actual == "Ropa" %}selected{% endif %}>Ropa</option>
+                        <option value="General" {% if categoria_actual == "General" %}selected{% endif %}>General</option>
+                        <option value="Otros" {% if categoria_actual == "Otros" %}selected{% endif %}>Otros</option>
+                    </select>
+                </div>
+                
+                <div class="filtro-item">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="stock_bajo" name="stock_bajo" value="true" {% if stock_bajo_actual %}checked{% endif %}>
+                        <label for="stock_bajo" style="display: inline; font-weight: normal;">
+                            Mostrar solo productos con stock bajo
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botones separados -->
+            <div class="botones-filtros">
+                <button type="submit" class="btn-buscar">🔍 Buscar</button>
+                <a href="{% url 'lista_productos' %}" class="btn-limpiar">🔄 Limpiar Filtros</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Información de resultados filtrados -->
+    {% if query_actual or categoria_actual or stock_bajo_actual %}
+    <div class="resultados-info">
+        <strong>📊 Resultados filtrados:</strong>
+        {% if query_actual %} • Búsqueda: "{{ query_actual }}"{% endif %}
+        {% if categoria_actual %} • Categoría: {{ categoria_actual }}{% endif %}
+        {% if stock_bajo_actual %} • Solo stock bajo{% endif %}
+        • <strong>{{ productos|length }}</strong> productos encontrados
+    </div>
+    {% endif %}
+
+    <!-- Lista de Productos -->
+    {% for producto in productos %}
+
+    <div class="producto {% if producto.necesita_reabastecimiento %}alerta{% endif %}">
+        <h3>{{ producto.nombre }}</h3>
+        <p><strong>Categoría:</strong> {{ producto.categoria }}</p>
+        <p><strong>Precio:</strong> <span class="precio">${{ producto.precio }}</span></p>
+        <p><strong>Stock:</strong> 
+            <span class="{% if producto.necesita_reabastecimiento %}stock-bajo{% endif %}">
+                {{ producto.stock }} unidades
+            </span>
+        </p>
+        {% if producto.descripcion %}
+        <p><strong>Descripción:</strong> {{ producto.descripcion }}</p>
+        {% endif %}
+        
+        <!-- Botones de acción -->
+        <div class="botones-accion">
+            <a href="{% url 'editar_producto' producto.id %}" class="btn btn-editar">✏️ Editar Producto</a>
+            <button onclick="mostrarConfirmacion({{ producto.id }}, '{{ producto.nombre }}')" class="btn btn-eliminar">🗑️ Eliminar Producto</button>
+        </div>
+    </div>
+    {% empty %}
+
+    <div class="producto">
+        <p>{% if query_actual or categoria_actual or stock_bajo_actual %}
+            No se encontraron productos con los filtros aplicados.
+        {% else %}
+            No hay productos en el inventario.
+        {% endif %}</p>
+    </div>
+    {% endfor %}
+
+    <!-- Modal de confirmación (mantener igual) -->
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content">
+            <h3>¿Estás seguro de eliminar este producto?</h3>
+            <p id="textoProducto"></p>
+            <form id="formEliminar" method="post" action="{% url 'eliminar_producto' 0 %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-confirmar">✅ Sí, Eliminar</button>
+                <button type="button" onclick="cerrarModal()" class="btn btn-cancelar">❌ Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function mostrarConfirmacion(productoId, productoNombre) {
+            document.getElementById('textoProducto').textContent = 'Producto: ' + productoNombre;
+            var form = document.getElementById('formEliminar');
+            form.action = "{% url 'eliminar_producto' 0 %}".replace('0', productoId);
+            document.getElementById('modalConfirmacion').style.display = 'block';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalConfirmacion').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            var modal = document.getElementById('modalConfirmacion');
+            if (event.target == modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+</body>
+</html>

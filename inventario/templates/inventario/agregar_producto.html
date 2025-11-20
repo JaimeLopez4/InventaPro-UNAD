@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agregar Producto - InventaPro</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; }
+        .form-container { 
+            max-width: 600px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        .btn { 
+            background: #3498db; 
+            color: white; 
+            padding: 10px 20px; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-success { background: #27ae60; }
+        .btn-secondary { background: #95a5a6; }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>➕ Agregar Nuevo Producto</h1>
+        <a href="{% url 'lista_productos' %}" class="btn">📦 Volver a Productos</a>
+        <a href="/" class="btn">🏠 Inicio</a>
+    </div>
+
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nombre">Nombre del Producto:</label>
+                <input type="text" id="nombre" name="nombre" required placeholder="Ej: Manzana">
+            </div>
+            
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" name="descripcion" rows="3" placeholder="Descripción del producto..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="precio">Precio ($):</label>
+                <input type="number" id="precio" name="precio" step="0.01" min="0" required placeholder="0.00">
+            </div>
+            
+            <div class="form-group">
+                <label for="stock">Stock Actual:</label>
+                <input type="number" id="stock" name="stock" min="0" required value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="stock_minimo">Stock Mínimo:</label>
+                <input type="number" id="stock_minimo" name="stock_minimo" min="0" required value="5">
+            </div>
+
+            <div class="form-group">
+                <label for="categoria">Categoría:</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="">Seleccionar categoría</option>
+                    <option value="Frutas">Frutas</option>
+                    <option value="Verduras">Verduras</option>
+                    <option value="Lácteos">Lácteos</option>
+                    <option value="Carnes">Carnes</option>
+                    <option value="Granos">Granos</option>
+                    <option value="Bebidas">Bebidas</option>
+                    <option value="Snacks">Snacks</option>
+                    <option value="Limpieza">Limpieza</option>
+                    <option value="Higiene">Higiene</option>
+                    <option value="Electrónicos">Electrónicos</option>
+                    <option value="Ropa">Ropa</option>
+                    <option value="General" selected>General</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-success">💾 Guardar Producto</button>
+            <a href="{% url 'lista_productos' %}" class="btn btn-secondary">❌ Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>

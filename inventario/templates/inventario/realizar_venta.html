@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registrar Venta - InventaPro</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px;
+            background: #f8f9fa;
+        }
+        .header { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px;
+        }
+        .btn { 
+            background: #3498db; 
+            color: white; 
+            padding: 10px 20px; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .btn-success { background: #27ae60; }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .form-container, .info-container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn-submit:hover {
+            background: #219a52;
+        }
+        
+        .error-message {
+            background: #ffeaa7;
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .producto-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .stock-bajo {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .stock-ok {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .info-card h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .ultimas-ventas {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .venta-item {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .venta-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Registrar Nueva Venta</h1>
+        <a href="/" class="btn">🏠 Inicio</a>
+        <a href="{% url 'reporte_ventas' %}" class="btn">📊 Reportes</a>
+    </div>
+
+    <div class="container">
+        <!-- Formulario de Venta -->
+        <div class="form-container">
+            <h2>🛒 Datos de la venta</h2>
+            
+            {% if error %}
+            <div class="error-message">
+                ⚠️ {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="producto">📦 Producto:</label>
+                    <select id="producto" name="producto" required>
+                        <option value="">Seleccionar producto</option>
+                        {% for producto in productos %}
+                            <option value="{{ producto.id }}" 
+                                    data-precio="{{ producto.precio }}"
+                                    data-stock="{{ producto.stock }}">
+                                {{ producto.nombre }} - Stock: {{ producto.stock }} - ${{ producto.precio }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cantidad">🔢 Cantidad a vender:</label>
+                    <input type="number" id="cantidad" name="cantidad" min="1" value="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vendedor">👤 Vendedor:</label>
+                    <input type="text" id="vendedor" name="vendedor" value="Sistema" required>
+                </div>
+                
+                <!-- Información del producto seleccionado -->
+                <div id="info-producto" class="producto-info" style="display: none;">
+                    <h4>📋 Información del Producto</h4>
+                    <p><strong>Precio unitario:</strong> $<span id="precio-unitario">0</span></p>
+                    <p><strong>Stock disponible:</strong> <span id="stock-disponible">0</span> unidades</p>
+                    <p><strong>Total de la venta:</strong> $<span id="total-venta">0</span></p>
+                </div>
+                
+                <button type="submit" class="btn-submit">💰 Registrar Venta</button>
+            </form>
+        </div>
+        
+        <!-- Panel de Información -->
+        <div class="info-container">
+            <h2>📈 Información</h2>
+            
+            <div class="info-card">
+                <h4>📊 Ventas</h4>
+                <p>Inventario de productos vendidos:</p>
+                <ul>
+                    {% for producto in productos|slice:":3" %}
+                    <li>{{ producto.nombre }} - Stock: {{ producto.stock }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div class="info-card">
+                <h4>⚠️ Productos con stock bajo</h4>
+                <div class="stock-alertas">
+                    {% for producto in productos %}
+                        {% if producto.necesita_reabastecimiento %}
+                        <div class="stock-bajo">
+                            ⚠️ {{ producto.nombre }} ({{ producto.stock }} unidades)
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                        <p>✅ Todo el stock está en niveles óptimos</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h4>🕒 Últimas Ventas</h4>
+                <div class="ultimas-ventas">
+                    {% with ultimas_ventas|slice:":5" as ventas_recientes %}
+                        {% for venta in ventas_recientes %}
+                        <div class="venta-item">
+                            <strong>{{ venta.producto.nombre }}</strong><br>
+                            {{ venta.cantidad }} unidades - ${{ venta.total_venta }}<br>
+                            <small>{{ venta.fecha_venta|date:"d/m H:i" }} - {{ venta.vendedor }}</small>
+                        </div>
+                        {% empty %}
+                        <p>No hay ventas recientes</p>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Actualizar información del producto seleccionado
+        document.getElementById('producto').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const precio = selectedOption.getAttribute('data-precio');
+            const stock = selectedOption.getAttribute('data-stock');
+            const cantidad = document.getElementById('cantidad').value;
+            
+            if (precio && stock) {
+                const total = (precio * cantidad).toFixed(2);
+                document.getElementById('precio-unitario').textContent = precio;
+                document.getElementById('stock-disponible').textContent = stock;
+                document.getElementById('total-venta').textContent = total;
+                document.getElementById('info-producto').style.display = 'block';
+            } else {
+                document.getElementById('info-producto').style.display = 'none';
+            }
+        });
+        
+        // Actualizar total cuando cambia la cantidad
+        document.getElementById('cantidad').addEventListener('input', function() {
+            const productoSelect = document.getElementById('producto');
+            const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+            const precio = selectedOption.getAttribute('data-precio');
+            
+            if (precio) {
+                const total = (precio * this.value).toFixed(2);
+                document.getElementById('total-venta').textContent = total;
+            }
+        });
+    </script>
+</body>
+</html>
